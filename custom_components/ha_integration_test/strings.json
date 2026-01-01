@@ -1,0 +1,19 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configuration de Mon Intégration",
+        "description": "Entrez votre clé API pour configurer l'intégration",
+        "data": {
+          "api_key": "Clé API"
+        }
+      }
+    },
+    "error": {
+      "api_key_required": "La clé API est requise"
+    },
+    "abort": {
+      "already_configured": "Cette intégration est déjà configurée"
+    }
+  }
+}
