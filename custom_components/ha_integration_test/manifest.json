@@ -4,8 +4,8 @@
   "documentation": "https://github.com/floriaaan/ha-integration-test",
   "issue_tracker": "https://github.com/floriaaan/ha-integration-test/issues",
   "codeowners": ["@floriaaan"],
-  "requirements": [],
-  "version": "0.0.1",
+  "requirements": ["aiohttp"],
+  "version": "0.1.0",
   "iot_class": "local_polling",
   "config_flow": true
 }
