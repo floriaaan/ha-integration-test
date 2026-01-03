@@ -1,6 +1,8 @@
 """Platform todo pour Mon Intégration."""
 import aiohttp
+import asyncio
 import random
+import logging
 from datetime import datetime, timedelta
 from homeassistant.components.todo import TodoItem, TodoItemStatus, TodoListEntity
 from homeassistant.config_entries import ConfigEntry
@@ -8,6 +10,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -35,7 +39,8 @@ class MaTodoList(TodoListEntity):
         """Génère une date d'expiration aléatoire entre aujourd'hui et 7 jours."""
         random_days = random.randint(0, 7)
         expiration = datetime.now() + timedelta(days=random_days)
-        return expiration.isoformat()
+        # FORMAT DATE UNIQUEMENT (YYYY-MM-DD)
+        return expiration.strftime("%Y-%m-%d")
 
     async def async_added_to_hass(self) -> None:
         """Chargé dans Home Assistant, initialise les données."""
@@ -59,7 +64,7 @@ class MaTodoList(TodoListEntity):
                             )
                             self._item_counter = max(self._item_counter, todo["id"])
                         self.async_write_ha_state()
-        except Exception:
+        except Exception as e:
             # En cas d'erreur, initialiser avec des tâches par défaut
             self._items = [
                 TodoItem(
@@ -87,9 +92,11 @@ class MaTodoList(TodoListEntity):
         """Ajoute un nouvel item."""
         self._item_counter += 1
         item.uid = str(self._item_counter)
-        # Ajouter une date d'expiration aléatoire par défaut si pas présente
+        
+        # Ajouter une date d'expiration par défaut si pas présente
         if not item.due:
             item.due = self._get_random_expiration()
+        
         self._items.append(item)
         self.async_write_ha_state()
 
@@ -97,10 +104,15 @@ class MaTodoList(TodoListEntity):
         """Met à jour un item existant."""
         for i, existing_item in enumerate(self._items):
             if existing_item.uid == item.uid:
-                # Préserver la date d'expiration existante si pas de nouvelle
-                if not item.due:
-                    item.due = existing_item.due
-                self._items[i] = item
+                # Conserver les champs non fournis
+                updated_item = TodoItem(
+                    uid=item.uid,
+                    summary=item.summary if item.summary else existing_item.summary,
+                    status=item.status if item.status else existing_item.status,
+                    due=item.due if item.due else existing_item.due,
+                    description=item.description if item.description else existing_item.description,
+                )
+                self._items[i] = updated_item
                 break
         self.async_write_ha_state()
 
